@@ -1,47 +1,74 @@
-# Real-time Price Aggregation and Normalization for US Structured Finance Securities (2014)
+# Structured Finance Pricing Pipeline (Python + SQL)
 
-**Description:**
+> Real-time aggregation & normalization of market pricing for US structured finance securities · **2014** · Python 2.7 + SQL
 
-Developed a data-driven solution to automate the real-time aggregation and normalization of market price data for US structured finance securities. This project streamlined the pricing process by collecting, cleaning, and standardizing data from diverse sources, including Bloomberg, Reuters, FINRA, Intex, FNMA, and GNMA. By implementing robust data pipelines and real-time dashboards, this project significantly enhanced the efficiency and accuracy of pricing operations, empowering the pricing analyst team with timely and data-driven insights.
+**Role:** Data & AI Platform Architect (early career — Data/ETL Engineer)
+**Type:** Portfolio case study — architecture & approach are representative; production code is proprietary.
 
-**Key Technologies (Circa 2014):**
+---
 
-* Programming Languages: Python (2.7), SQL
-* Data Engineering: Data extraction, cleaning, transformation, and loading (ETL)
-* Data Analysis and Visualization: Data analysis, statistical modeling, and data visualization techniques (Matplotlib, basic web-based dashboards)
-* Data Storage: SQL Database (MySQL, PostgreSQL)
-* API Integration: Bloomberg API (older versions), Reuters API, FINRA API, Intex API, FNMA API, GNMA API
-* Web Scraping: Beautiful Soup, Scrapy
-* Scripting/Automation: Cron jobs, custom scripts
+## Context
 
-**Project Overview:**
+A pricing-analyst team needed timely, consistent prices for US structured finance securities (RMBS/CMBS/ABS), but the inputs were scattered across vendors — Bloomberg, Reuters, FINRA, Intex, FNMA and GNMA — each with its own format, identifiers and pricing conventions. Analysts were stitching this together by hand, which was slow and error-prone.
 
-* **Data Ingestion:**
-    * Developed Python 2.7 scripts to extract real-time price data from multiple sources using their respective APIs and web scraping techniques.
-    * Implemented robust error handling and retry mechanisms to ensure data reliability and minimize data loss.
-    * Used cron jobs or custom scripts for scheduled data ingestion tasks.
-* **Data Cleaning and Normalization:**
-    * Employed SQL queries to clean and transform the extracted data, addressing missing values, outliers, and data inconsistencies.
-    * Implemented data normalization techniques to standardize pricing conventions and methodologies across various data sources, ensuring data consistency.
-* **Data Storage and Processing:**
-    * Stored the cleaned and normalized data in a SQL database (MySQL, PostgreSQL) for efficient querying and analysis.
-    * Developed Python scripts to process the data, calculating key metrics such as price spreads, implied volatilities, and other relevant indicators.
-* **Real-time Dashboard:**
-    * Built basic web-based dashboards using technologies like Matplotlib for visualizations, and simple web frameworks, to display real-time price information, key metrics, and trends.
-    * Implemented basic filtering and customization features to cater to user preferences and enhance data exploration.
+This project (my first end-to-end data engineering build, **circa 2014**) automated the collection, cleaning and normalization of that data into a single consistent store, with lightweight dashboards on top. It is the **foundation stage** of my journey: pure Python and SQL, on-premises, no cloud and no distributed compute — because in 2014 that was the stack.
 
-**Impact and Benefits:**
+## Architecture
 
-* **Improved Efficiency:** Automated data collection and processing significantly reduced manual effort, enhancing productivity for the pricing analyst team.
-* **Enhanced Accuracy:** Consistent data cleaning and normalization processes ensured accurate and reliable price information, minimizing errors and improving decision-making.
-* **Timely Decision Making:** Real-time access to market data through the dashboards enabled timely pricing decisions and facilitated quick responses to market fluctuations.
-* **Data-Driven Insights:** The dashboards provided valuable insights into market trends and patterns, empowering analysts to make informed decisions based on data-driven analysis.
-* **Robust Data Pipelines:** Implemented robust and reliable data pipelines, ensuring data integrity.
+```mermaid
+flowchart LR
+  subgraph Sources
+    BB[Bloomberg API]
+    RT[Reuters API]
+    FN[FINRA]
+    IX[Intex]
+    FM[FNMA / GNMA]
+  end
+  Sources --> ING[Python 2.7 ingestion<br/>APIs + Beautiful Soup / Scrapy]
+  CRON[(cron scheduler)] -.triggers.-> ING
+  ING --> STG[(Staging tables)]
+  STG --> NORM[SQL cleaning &<br/>normalization]
+  NORM --> DB[(SQL DB<br/>MySQL / PostgreSQL)]
+  DB --> METRICS[Python metrics<br/>spreads · indicators]
+  METRICS --> DASH[Matplotlib /<br/>web dashboards]
+```
 
-**Project Context:**
+## Tech stack
 
-This project addressed the need for efficient and accurate real-time pricing of US structured finance securities. By automating data aggregation and normalization from multiple sources, this project significantly improved the pricing process, enabling better risk management and decision-making for the pricing analyst team.
+- **Languages:** Python 2.7, SQL
+- **Ingestion:** Vendor APIs (Bloomberg/Reuters/FINRA/Intex/FNMA/GNMA), web scraping (Beautiful Soup, Scrapy)
+- **Storage / modeling:** Relational SQL database (MySQL, PostgreSQL)
+- **Processing:** Python scripts, SQL transformations
+- **Visualization:** Matplotlib, basic web dashboards
+- **Automation:** cron jobs, custom scheduling scripts
 
-**Contact:**
+## Data model & architecture
 
-* LinkedIn: [My LinkedIn Profile URL](https://www.linkedin.com/in/kamalakarpeta/)
+- **Staging → normalized** two-tier relational model: raw vendor payloads land in per-source staging tables, then are conformed into normalized pricing tables keyed by a common security identifier.
+- A **security master / cross-reference** maps vendor-specific identifiers (CUSIP and vendor tickers) to a single internal key so the same bond from two vendors reconciles.
+- Normalization layer standardizes **price quoting conventions** (clean vs dirty price, yield vs spread) so downstream consumers compare like-for-like.
+
+## Key design decisions
+
+- **Normalize at write time, not read time** — divergent vendor conventions are reconciled once during load, so every downstream query and dashboard sees consistent prices.
+- **Robust ingestion over clever ingestion** — explicit retry/back-off and error handling per source, because vendor APIs and scraped pages failed unpredictably; a partial source should never corrupt the store.
+- **SQL as the contract** — the normalized schema is the stable interface between messy sources and analysts, insulating users from upstream change.
+- **Scheduled + idempotent** — cron-driven loads designed to be safely re-runnable for a given as-of date.
+
+## Outcome & impact
+
+- Replaced manual, multi-source price assembly with an automated pipeline, freeing analyst time for actual pricing judgment.
+- Improved **consistency and accuracy** through one normalization path instead of many ad-hoc spreadsheets.
+- Gave the desk **timely** prices and basic trend visibility, supporting faster pricing decisions.
+- Established reusable patterns (source adapters, staging→normalized, security cross-reference) I carried into every later platform.
+
+## Where this sits in my journey
+
+Part of my **Data & AI Platform Architect** portfolio — the **2014 Foundations** stage, where the toolkit was just Python and SQL.
+
+⏮ prev: _(start of the journey)_ · ⏭ next: [market-performance-analytics-python-ml](https://github.com/kamalakarpeta/market-performance-analytics-python-ml)
+Full journey: https://kamalakarpeta.github.io
+
+## Contact
+
+LinkedIn: https://www.linkedin.com/in/kamalakarpeta/
