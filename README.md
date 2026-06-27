@@ -64,7 +64,7 @@ flowchart LR
 
 ## Where this sits in my journey
 
-Part of my journey toward **Data & AI Platform Architect** — the **2014 Foundations** stage, when I was a **Data Engineer** and the toolkit was just Python and SQL.
+Part of my journey toward **Data & AI Platform Engineer** — the **2014 Foundations** stage, when I was a **Data Engineer** and the toolkit was just Python and SQL.
 
 ⏮ prev: _(start of the journey)_ · ⏭ next: [market-performance-analytics-python-ml](https://github.com/kamalakarpeta/market-performance-analytics-python-ml)
 Full journey: https://kamalakarpeta.github.io
